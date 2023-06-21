@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+    
+    <style>
+        div {
+            display: flex;
+            justify-content: center; 
+            align-items: center;
+            flex-direction: column;
+        }
+        img {
+            max-width: 60%; 
+            max-height: 60%;
+            width: auto;
+            height: auto;
+        }
+    </style>
+
+    <article class="media content-section">
+        <div class="media-body">
+            {% for image_string in image_strings %}
+            <img src="data:image/jpeg;base64,{{ image_string }}" alt="processed image">
+            {% endfor %}
+            {% if image_strings == [] %}
+                <h1>Please wait. . .</h1>
+            {% endif %}
+        </div>    
+    </article>
+{% endblock content %}
+

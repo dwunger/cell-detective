@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block content %}
+    <article class="media content-section">
+
+        <form method="post" enctype="multipart/form-data" action="/upload">
+            <div>
+                <label for="image_uploads">Choose images to upload (PNG, JPG, TIFF)</label>
+                <input
+                type="file"
+                id="image_uploads"
+                name="image_uploads"
+                accept=".jpg, .jpeg, .png, .tiff"
+                multiple />
+            </div>
+            <div class="preview">
+                <p>No files currently selected for upload</p>
+                {% if error_msg %}
+                    <p class="error"><strong>Woops! No file was selected for upload.</strong></p>
+                {% endif %}
+            </div>
+            <div>
+                <button>Submit</button>
+            </div>
+            </form>
+
+    </article>
+{% endblock content %}
+
