@@ -1,0 +1,4 @@
+python train.py --img 640 --batch 16 --epochs 100 --data data.yaml --cfg yolov5s.yaml --weights yolov5s.pt --name kb_counter
+
+
+python detect.py --weights runs/train/kb_counter9/weights/best.pt --img 1500 --conf 0.4 --source C:\Users\dento\Desktop\Python_Projects\colab\image-segmentation\dataset\images\train --line-thickness 2 --hide-labels

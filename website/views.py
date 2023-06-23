@@ -4,6 +4,10 @@ from PIL import Image
 import io
 import base64
 import numpy as np
+
+
+
+
 Image.MAX_IMAGE_PIXELS = 5000000000 
 views = Blueprint("views", __name__)
 app = Flask(__name__)
@@ -17,47 +21,57 @@ def home():
 def about():
     return render_template('about.html')
 
+import subprocess
+import shutil
+import os
+
 @views.route('/upload', methods=['POST'])
 def upload_file():
     if 'image_uploads' not in request.files:
         return 'No file part'
     
     files = request.files.getlist('image_uploads')
-    
     image_strings = []
-    #!TODO:
-    #!fetal_cells, maternal_cells = 0,0
+    
     for file in files:
         if file.filename == '':
             return 'No selected file'
-            # Read file into memory
+            
         file_in_memory = file.read()
-        
-        # Convert file in memory to an image (assuming the file is an image)
         image = Image.open(io.BytesIO(file_in_memory))
 
-        # Convert the image to grayscale using OpenCV
-        gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2GRAY)
-        
-        # Convert back to PIL Image
-        gray_image_pil = Image.fromarray(gray_image)
-        
-        # Create a BytesIO object and save the grayscale image in it
-        buf = io.BytesIO()
-        gray_image_pil.save(buf, format='JPEG')
-        buf.seek(0)
-        
-        # Convert binary data to base64 string
-        image_string = base64.b64encode(buf.read()).decode()
+        # save image to a temporary file
+        image_path = 'temp.jpg'
+        image.save(image_path)
 
-        # assuming image_string is the base64 string of the processed image
+        # call the detect.py script
+        command = ['python', 'C:/Users/dento/Desktop/Python_Projects/colab/image-segmentation/detect.py',
+                   '--weights', "C:/Users/dento/Desktop/Python_Projects/colab/image-segmentation/yolov5/runs/train/kb_counter9/weights/best.pt",
+                   '--img', '1500',
+                   '--conf', '0.4',
+                   '--source', image_path,
+                   '--line-thickness', '2',
+                   '--hide-labels']
+        subprocess.run(command, check=True)
+
+        # YOLOv5 saves processed images to 'runs/detect/exp' by default
+        processed_image_path = os.path.join('runs', 'detect', 'exp', os.path.basename(image_path))
+
+        # read the processed image
+        processed_image = Image.open(processed_image_path)
+        buf = io.BytesIO()
+        processed_image.save(buf, format='JPEG')
+        buf.seek(0)
+        image_string = base64.b64encode(buf.read()).decode()
         image_strings.append(image_string)
-        
-        #!TODO: 
-        #!fetal, maternal = count_cells(image)
-        #!fetal_cells += fetal
-        #!maternal_cells += maternal
-        #!TODO: add coordinates too and draw crosses on counted cells
+
+        # remove the temporary and processed image files
+        os.remove(image_path)
+        os.remove(processed_image_path)
+
+    # We are passing the list of base64 image strings to the template
+    return render_template('upload.html', image_strings=image_strings)
+
     
     # We are passing the list of base64 image strings to the template
     return render_template('upload.html', image_strings=image_strings)
