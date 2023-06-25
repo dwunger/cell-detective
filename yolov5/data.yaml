@@ -1,0 +1,7 @@
+train: C:\Users\dento\Desktop\Python_Projects\colab\image-segmentation\dataset\images\train
+val: C:\Users\dento\Desktop\Python_Projects\colab\image-segmentation\dataset\images\valid
+
+nc: 2
+
+names: ['fetal', 'maternal']
+
