@@ -53,9 +53,13 @@ def upload_file():
         #            '--line-thickness', '2',
         #            '--hide-labels']
         # subprocess.run(command, check=True)
-        image = yolov5.detect.run(source=image_path, conf_thres = 0.4, line_thickness = 2, weights = r'C:/Users/dento/Desktop/Python_Projects/colab/image-segmentation/yolov5/runs/train/kb_counter9/weights/best.pt', exist_ok=True)
+        image = yolov5.detect.run(source=image_path, conf_thres = 0.4, line_thickness = 2, weights = '.\\yolov5\\runs\\train\\kb_counter9\\weights\\best.pt', exist_ok=True)
         # YOLOv5 saves processed images to 'runs/detect/exp' by default
-        processed_image_path = os.path.join('runs', 'detect', 'exp', os.path.basename(image_path))
+        
+        processed_image_path = os.path.join('yolov5', 'runs', 'detect', 'exp', os.path.basename(image_path))
+        processed_image_path = os.getcwd() + "\\" + processed_image_path
+
+        
 
         # read the processed image
         processed_image = Image.open(processed_image_path)
