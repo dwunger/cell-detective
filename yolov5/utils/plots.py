@@ -31,13 +31,18 @@ RANK = int(os.getenv('RANK', -1))
 matplotlib.rc('font', **{'size': 11})
 matplotlib.use('Agg')  # for writing to files only
 
-
+def pprint(_str):
+    _str = str(_str)
+    import sys
+    module = str(sys.modules[__name__])
+    module = module.split('\\')[-1]
+    module = module.replace("\'>", '')
+    print('\n\n\n*****\n'f"from: {module}.\n"+_str+'\n*****\n\n\n')    
 class Colors:
     # Ultralytics color palette https://ultralytics.com/
     def __init__(self):
         # hex = matplotlib.colors.TABLEAU_COLORS.values()
-        hexs = ( '92CC17', '3DDB86', '1A9334', '00D4BB', 'FF3838', 'FF9D97', 'FF701F', 'FFB21D', 'CFD231','48F90A', 
-                '2C99A8', '00C2FF', '344593', '6473FF', '0018EC', '8438FF', '520085', 'CB38FF', 'FF95C8', 'FF37C7')
+        hexs = ( '89F528','28F3F5')
         self.palette = [self.hex2rgb(f'#{c}') for c in hexs]
         self.n = len(self.palette)
 
@@ -70,6 +75,7 @@ def check_pil_font(font=FONT, size=10):
 
 
 class Annotator:
+    # pprint('hi dad!')
     # YOLOv5 Annotator for train/val mosaics and jpgs and detect/hub inference annotations
     def __init__(self, im, line_width=None, font_size=None, font='Arial.ttf', pil=False, example='abc'):
         assert im.data.contiguous, 'Image not contiguous. Apply np.ascontiguousarray(im) to Annotator() input images.'
@@ -84,9 +90,11 @@ class Annotator:
             self.im = im
         self.lw = line_width or max(round(sum(im.shape) / 2 * 0.003), 2)  # line width
 
-    def box_label(self, box, label='', color=(128, 128, 128), txt_color=(255, 255, 255)):
+    def box_label(self, box, label='', color=(128, 128, 128), txt_color=(0, 0, 0), conf_only = False):
         # Add one xyxy box to image with label
         if self.pil or not is_ascii(label):
+            # Not using PIL condition
+            # pprint('using pil_label')
             self.draw.rectangle(box, width=self.lw, outline=color)  # box
             if label:
                 w, h = self.font.getsize(label)  # text width, height (WARNING: deprecated) in 9.2.0
@@ -101,8 +109,12 @@ class Annotator:
                 self.draw.text((box[0], box[1] - h if outside else box[1]), label, fill=txt_color, font=self.font)
         else:  # cv2
             p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
-            cv2.rectangle(self.im, p1, p2, color, thickness=self.lw, lineType=cv2.LINE_AA)
+            cv2.rectangle(self.im, p1, p2, color, thickness=self.lw*2, lineType=cv2.LINE_AA)
+            o1, o2 = (int(box[0]-2), int(box[1])-2), (int(box[2]+2), int(box[3])+2) #outline
+            cv2.rectangle(self.im, o1, o2, (0,0,0), thickness=1, lineType=cv2.LINE_AA)
             if label:
+                if conf_only:
+                    label = label[-3:]
                 tf = max(self.lw - 1, 1)  # font thickness
                 w, h = cv2.getTextSize(label, 0, fontScale=self.lw / 3, thickness=tf)[0]  # text width, height
                 outside = p1[1] - h >= 3

@@ -795,12 +795,22 @@ def resample_segments(segments, n=1000):
         segments[i] = np.concatenate([np.interp(x, xp, s[:, i]) for i in range(2)]).reshape(2, -1).T  # segment xy
     return segments
 
-
-def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
+def pprint(_str):
+    _str = str(_str)
+    import sys
+    module = str(sys.modules[__name__])
+    module = module.split('\\')[-1]
+    module = module.replace("\'>", '')
+    print('\n\n\n****\n'f"from: {module}.\n"+_str+'\n****\n\n\n')    
+def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None, box_to_point=False):
     # Rescale boxes (xyxy) from img1_shape to img0_shape
     if ratio_pad is None:  # calculate from img0_shape
         gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
         pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
+        # print(f"gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])")
+        # print(f"min({img1_shape[0]} / {img0_shape[0]}, {img1_shape[1]} / {img0_shape[1]}")
+        # print(f"pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2")
+        # print(f"pa = ({img1_shape[1] }- {img0_shape[1]} * {gain}) / 2, ({img1_shape[0]} -{ img0_shape[0] }* {gain}) / 2")
     else:
         gain = ratio_pad[0][0]
         pad = ratio_pad[1]
@@ -808,29 +818,35 @@ def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
     boxes[..., [0, 2]] -= pad[0]  # x padding
     boxes[..., [1, 3]] -= pad[1]  # y padding
     boxes[..., :4] /= gain
+    if box_to_point == True:
+        const = 2 #shift x,y coordinates to center, displace from center by "const" pixels (below) #!default value = 4
+        boxes[..., [0, 2]] = (boxes[..., [0]] + boxes[..., [2]])/2
+        boxes[..., [1, 3]] = (boxes[..., [1]] + boxes[..., [3]])/2
+        boxes[..., [0,1]] -= const
+        boxes[..., [2,3]] += const
     clip_boxes(boxes, img0_shape)
     return boxes
-def scale_boxes_to_dots(img1_shape, boxes, img0_shape, ratio_pad=None):
-    # Rescale boxes (xyxy) from img1_shape to img0_shape
-    if ratio_pad is None:  # calculate from img0_shape
-        gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
-        pad = (img1_shape[1] - img0_shape[1] * 0) / 2, (img1_shape[0] - img0_shape[0] * 0) / 2  # wh padding
-    else:
-        gain = ratio_pad[0][0]
-        pad = ratio_pad[1]
+# def scale_boxes_to_dots(img1_shape, boxes, img0_shape, ratio_pad=None):
+#     # Rescale boxes (xyxy) from img1_shape to img0_shape
+#     if ratio_pad is None:  # calculate from img0_shape
+#         gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
+#         pad = (img1_shape[1] - img0_shape[1] * 0) / 2, (img1_shape[0] - img0_shape[0] * 0) / 2  # wh padding
+#     else:
+#         gain = ratio_pad[0][0]
+#         pad = ratio_pad[1]
 
-    boxes[..., [0, 2]] -= pad[0]  # x padding
-    boxes[..., [1, 3]] -= pad[1]  # y padding
-    boxes[..., :4] /= gain
+#     boxes[..., [0, 2]] -= pad[0]  # x padding
+#     boxes[..., [1, 3]] -= pad[1]  # y padding
+#     boxes[..., :4] /= gain
 
-    # Convert boxes to dots by taking the center of the box
-    boxes[..., 0] = (boxes[..., 0] + boxes[..., 2]) / 2  # x center
-    boxes[..., 1] = (boxes[..., 1] + boxes[..., 3]) / 2  # y center
-    # The size of the box (width and height) is now 0 as it is a dot
-    boxes[..., 2:] = 0
+#     # Convert boxes to dots by taking the center of the box
+#     boxes[..., 0] = (boxes[..., 0] + boxes[..., 2]) / 2  # x center
+#     boxes[..., 1] = (boxes[..., 1] + boxes[..., 3]) / 2  # y center
+#     # The size of the box (width and height) is now 0 as it is a dot
+#     boxes[..., 2:] = 0
 
-    clip_boxes(boxes, img0_shape)
-    return boxes
+#     clip_boxes(boxes, img0_shape)
+#     return boxes
 
 
 def scale_segments(img1_shape, segments, img0_shape, ratio_pad=None, normalize=False):
