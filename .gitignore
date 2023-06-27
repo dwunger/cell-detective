@@ -1,2 +1,3 @@
-yolo_env
+yolo_env/
 *.tiff
+__pycache__/
