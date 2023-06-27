@@ -55,9 +55,9 @@ def upload_file():
         if idx == 0:
             idx = ''
         image = yolov5.detect.run(source=image_path, 
-                                  imgsz=(3000,3000),
+                                  imgsz=(3200,3200),
                                   line_thickness = 1, 
-                                  weights = '.\\yolov5\\runs\\train\\kb_counter10\\weights\\bestv15.pt', 
+                                  weights = '.\\yolov5\\runs\\train\\kb_counter10\\weights\\bestv14.pt', #10,13,14,15
                                   exist_ok=True, 
                                   hide_labels=True,
                                   conf_only = True, 
