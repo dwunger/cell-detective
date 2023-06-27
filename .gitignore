@@ -1,3 +1,4 @@
 yolo_env/
 *.tiff
 __pycache__/
+*.pyc
