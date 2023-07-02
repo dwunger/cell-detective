@@ -54,14 +54,18 @@ def upload_file():
         image.save(image_path)
         if idx == 0:
             idx = ''
+            
+        version = 36
         image = yolov5.detect.run(source=image_path, 
-                                  imgsz=(3200,3200),
+                                  imgsz=(2560,2560),
                                   line_thickness = 1, 
-                                  weights = '.\\yolov5\\runs\\train\\kb_counter10\\weights\\bestv14.pt', #10,13,14,15
+                                  iou_thres = 0.2,
+                                  conf_thres= 0.1,
+                                  weights = f'.\\yolov5\\runs\\train\\kb_counter10\\weights\\bestv{version}.pt', #10,13,14,15
                                   exist_ok=True, 
                                   hide_labels=True,
-                                  conf_only = True, 
-                                  filename = str(file.filename), 
+                                  conf_only = False, 
+                                  filename = str(file.filename),  
                                   box_to_point=True,
                                   save_txt = False)
         # YOLOv5 saves processed images to 'runs/detect/exp' by default
